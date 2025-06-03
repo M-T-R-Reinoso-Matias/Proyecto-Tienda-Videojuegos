@@ -1,0 +1,161 @@
+/* Animación de entrada */
+@keyframes fadeInUp {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+body {
+  animation: fadeInUp 1s ease-in-out;
+  background: linear-gradient(135deg, #0f0f0f, #1a1a1a);
+  color: #ffffff;
+  font-family: 'Roboto', sans-serif;
+  margin: 0 20px;
+  padding: 0 20px;
+  line-height: 1.6;
+  font-size: 16px;
+  /* Evita que el contenido se desborde verticalmente */
+  overflow-y: auto;
+  /* Evita que el contenido se desborde horizontalmente */
+  overflow-x: hidden;
+
+  /* Pone todo El texto en el centro */
+  display: flex;
+  flex-direction: column;
+  align-items: left;
+  justify-content: center;
+  text-align: left;
+  font-weight: 300;
+  
+
+}
+
+
+ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+
+  display: flex;
+  flex-direction: column;
+}
+li {
+  margin: 10px 0;
+}
+
+
+/* Títulos con animación glow */
+h1, h2, h3 {
+  color: #00ffcc;
+  text-shadow: 0 0 8px #00ffcc, 0 0 16px #00ffcc;
+  animation: glow 1.5s ease-in-out infinite alternate;
+}
+
+@keyframes glow {
+  from {
+    text-shadow: 0 0 5px #00ffcc;
+  }
+  to {
+    text-shadow: 0 0 20px #00ffcc, 0 0 30px #00ffcc;
+  }
+}
+
+/* Botones con efecto neón y animación al pasar el mouse */
+button {
+  background: #0f0f0f;
+  border: 2px solid #00ffcc;
+  color: #00ffcc;
+  padding: 10px 20px;
+  font-weight: bold;
+  text-transform: uppercase;
+  border-radius: 10px;
+  transition: 0.4s;
+  box-shadow: 0 0 10px #00ffcc80;
+}
+
+button:hover {
+  background-color: #00ffcc;
+  color: #000;
+  box-shadow: 0 0 20px #00ffcc, 0 0 40px #00ffcc;
+  transform: scale(1.05);
+}
+
+/* Inputs con brillo */
+input, select, textarea {
+  border: 1px solid #00ffcc;
+  background-color: #1a1a1a;
+  color: #fff;
+  padding: 10px;
+  border-radius: 6px;
+  transition: box-shadow 0.3s ease-in-out;
+}
+
+input:focus, textarea:focus {
+  outline: none;
+  box-shadow: 0 0 10px #00ffcc;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+.pantalla-inicio {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background: radial-gradient(circle at center, #000000, #0f0f0f);
+  color: #00ffcc;
+  text-align: center;
+  animation: fadeIn 2s ease-in-out;
+}
+
+.titulo-inicio {
+  font-size: 4rem;
+  font-weight: bold;
+  text-shadow: 0 0 10px #00ffcc, 0 0 20px #00ffcc;
+  animation: pulsar 2s infinite alternate;
+}
+
+.texto-inicio {
+  font-size: 1.2rem;
+  margin: 20px 0;
+  color: #ccc;
+  font-style: italic;
+}
+
+.boton-inicio {
+  background-color: transparent;
+  border: 2px solid #00ffcc;
+  color: #00ffcc;
+  font-size: 1.5rem;
+  padding: 12px 30px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: 0.3s;
+  box-shadow: 0 0 10px #00ffcc;
+}
+
+.boton-inicio:hover {
+  background-color: #00ffcc;
+  color: #000;
+  box-shadow: 0 0 20px #00ffcc, 0 0 30px #00ffcc;
+  transform: scale(1.05);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes pulsar {
+  from { text-shadow: 0 0 10px #00ffcc; }
+  to { text-shadow: 0 0 30px #00ffcc; }
+}
