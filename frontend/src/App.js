@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import Productos from './components/Productos';
 import Clientes from './components/Clientes';
 import Pedidos from './components/Pedidos';
+import Juegos from './components/Juegos';
 import NuevoPedido from './components/NuevoPedido';
 import BuscarProducto from './components/BuscarProducto';
 import ProductosSinStock from './components/ProductosSinStock';
@@ -11,6 +12,7 @@ import PantallaInicio from './components/PantallaInicio';
 
 function App() {
   const [inicio, setInicio] = useState(false);
+  const [seccion, setSeccion] = useState('productos');
   const [refrescarPedidos, setRefrescarPedidos] = useState(false); // Nuevo estado
 
   const manejarPedidoCreado = () => {
@@ -18,6 +20,8 @@ function App() {
     setRefrescarPedidos(prev => !prev);
   };
 
+
+  // Esta es la funcion para aplicar la musica de fondo
   /*useEffect(() => {
     let musica;
     if (!inicio) {
@@ -41,12 +45,31 @@ function App() {
 
   return (
     <div>
-      <Productos />
-      <BuscarProducto />
-      <ProductosSinStock />
-      <Clientes />
+      {seccion === 'productos' && (
+        <>
+          <Productos />
+          <BuscarProducto />
+          <ProductosSinStock />
+        </>
+      )}
+
+      {seccion === 'clientes' && <Clientes />}
+
+      {seccion === 'pedidos' && (
+      <>
       <Pedidos refrescar={refrescarPedidos} /> {/* 👈 Aquí se pasa */}
       <NuevoPedido onPedidoCreado={manejarPedidoCreado} /> {/* 👈 Aquí también */}
+      </>
+      )}
+
+      {seccion === 'juegos' && <Juegos />}
+
+      <nav style={{ marginBottom: '1.5rem' }}>
+        <button onClick={() => setSeccion('productos')}>Productos</button>
+        <button onClick={() => setSeccion('clientes')}>Clientes</button>
+        <button onClick={() => setSeccion('pedidos')}>Pedidos</button>
+        <button onClick={() => setSeccion('juegos')}>Juegos</button>
+      </nav>
     </div>
   );
 }
