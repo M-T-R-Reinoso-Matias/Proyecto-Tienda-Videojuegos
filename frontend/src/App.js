@@ -12,6 +12,7 @@ import PantallaInicio from './components/PantallaInicio';
 
 function App() {
   const [inicio, setInicio] = useState(false);
+  // Segun la ruta seleccionada es donde va a iniciar despues de darle al boton start
   const [seccion, setSeccion] = useState('productos');
   const [refrescarPedidos, setRefrescarPedidos] = useState(false); // Nuevo estado
 
