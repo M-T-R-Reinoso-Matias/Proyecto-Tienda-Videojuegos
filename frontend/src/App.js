@@ -70,7 +70,6 @@ function App() {
         <button onClick={() => setSeccion('clientes')}>Clientes</button>
         <button onClick={() => setSeccion('pedidos')}>Pedidos</button>
         <button onClick={() => setSeccion('juegos')}>Juegos</button>
-        <button onClick={() => setSeccion('Inicio')}></button>
       </nav>
     </div>
   );
