@@ -17,14 +17,33 @@ router.get('/', async (req, res) => {
 
 // Agregar uno (nombre único)
 router.post('/', async (req, res) => {
-  const { nombre } = req.body;
-  const existente = await Juego.findOne({ nombre });
-  if (existente) return res.status(400).json({ error: 'Ese juego ya está registrado.' });
+  try {
+    const { nombre, plataforma, categoria, stock } = req.body;
 
-  const nuevoJuego = new Juego(req.body);
-  await nuevoJuego.save();
-  res.status(201).json(nuevoJuego);
+    // Validación de campos obligatorios
+    if (!nombre || !plataforma || !categoria || stock == null) {
+      return res.status(400).json({ error: 'Todos los campos son obligatorios.' });
+    }
+
+    if (typeof stock !== 'number' || stock < 0) {
+      return res.status(400).json({ error: 'Stock debe ser un número no negativo.' });
+    }
+
+    const existente = await Juego.findOne({ nombre });
+    if (existente) {
+      return res.status(400).json({ error: 'Ese juego ya está registrado.' });
+    }
+
+    const nuevoJuego = new Juego({ nombre, plataforma, categoria, stock });
+    const guardado = await nuevoJuego.save();
+
+    res.status(201).json(guardado);
+  } catch (error) {
+    console.error('Error al agregar juego:', error.message);
+    res.status(500).json({ error: 'Error del servidor' });
+  }
 });
+
 
 // Eliminar
 router.delete('/:id', async (req, res) => {

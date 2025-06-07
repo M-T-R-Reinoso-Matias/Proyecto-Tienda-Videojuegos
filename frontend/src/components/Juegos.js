@@ -3,61 +3,93 @@ import api from '../services/api';
 
 function Juegos() {
   const [juegos, setJuegos] = useState([]);
-  const [nuevo, setNuevo] = useState({ nombre: '', categoria: '', plataforma: '', stock: 0 });
+  const [nuevoJuego, setNuevoJuego] = useState({ nombre: '', plataforma: '', categoria: '', stock: 0 });
+  const [editarId, setEditarId] = useState(null);
 
-  const cargarJuegos = async () => {
+  const fetchJuegos = async () => {
     const res = await api.get('/juegos');
     setJuegos(res.data);
   };
 
   useEffect(() => {
-    cargarJuegos();
+    fetchJuegos();
   }, []);
 
-  const agregarJuego = async () => {
-    if (!nuevo.nombre) return alert('Nombre es obligatorio');
-    await api.post('/juegos', nuevo);
-    setNuevo({ nombre: '', categoria: '', plataforma: '', stock: 0 });
-    cargarJuegos();
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setNuevoJuego({ ...nuevoJuego, [name]: value });
   };
+
+  const agregarJuego = async () => {
+  const { nombre, plataforma, categoria, stock } = nuevoJuego;
+
+  if (!nombre.trim() || !plataforma.trim() || !categoria.trim() || isNaN(stock) || stock < 0) {
+    alert('⚠️ Todos los campos son obligatorios y el stock debe ser un número no negativo.');
+    return;
+  }
+
+  try {
+    await api.post('/juegos', { nombre, plataforma, categoria, stock: Number(stock) });
+    setNuevoJuego({ nombre: '', plataforma: '', categoria: '', stock: 0 });
+    fetchJuegos();
+    alert('✅ Juego agregado');
+  } catch (err) {
+    console.error(err);
+    alert('❌ Error del servidor: ' + (err.response?.data?.error || err.message));
+  }
+};
+
 
   const eliminarJuego = async (id) => {
-    await api.delete(`/juegos/${id}`);
-    cargarJuegos();
+    if (window.confirm('¿Estás seguro de eliminar este juego?')) {
+      await api.delete(`/juegos/${id}`);
+      fetchJuegos();
+    }
   };
 
-  const actualizarJuego = async (id, campo, valor) => {
-    const actualizado = juegos.find(j => j._id === id);
-    if (!actualizado) return;
+  const iniciarEdicion = (juego) => {
+    setEditarId(juego._id);
+    setNuevoJuego({
+      nombre: juego.nombre,
+      plataforma: juego.plataforma,
+      categoria: juego.categoria,
+      stock: juego.stock
+    });
+  };
 
-    actualizado[campo] = valor;
-    await api.put(`/juegos/${id}`, actualizado);
-    cargarJuegos();
+  const guardarEdicion = async () => {
+    try {
+      await api.put(`/juegos/${editarId}`, nuevoJuego);
+      setEditarId(null);
+      setNuevoJuego({ nombre: '', plataforma: '', categoria: '', stock: 0 });
+      fetchJuegos();
+      alert('✅ Juego actualizado');
+    } catch (err) {
+      alert('❌ Error: ' + err.response.data.error);
+    }
   };
 
   return (
     <div style={{ padding: '2rem' }}>
-      <h2>📦 Juegos Físicos</h2>
+      <h2>Juegos Físicos</h2>
 
-      <div>
-        <input placeholder="Nombre" value={nuevo.nombre} onChange={e => setNuevo({ ...nuevo, nombre: e.target.value })} />
-        <input placeholder="Categoría" value={nuevo.categoria} onChange={e => setNuevo({ ...nuevo, categoria: e.target.value })} />
-        <input placeholder="Plataforma" value={nuevo.plataforma} onChange={e => setNuevo({ ...nuevo, plataforma: e.target.value })} />
-        <input type="number" min="0" value={nuevo.stock} onChange={e => setNuevo({ ...nuevo, stock: parseInt(e.target.value) })} />
-        <button onClick={agregarJuego}>Agregar Juego</button>
-      </div>
+      <input name="nombre" placeholder="Nombre" value={nuevoJuego.nombre} onChange={handleChange} />
+      <input name="plataforma" placeholder="Plataforma" value={nuevoJuego.plataforma} onChange={handleChange} />
+      <input name="categoria" placeholder="Categoría" value={nuevoJuego.categoria} onChange={handleChange} />
+      <input name="stock" type="number" placeholder="Stock" value={nuevoJuego.stock} onChange={handleChange} />
+
+      {editarId ? (
+        <button onClick={guardarEdicion}>Guardar</button>
+      ) : (
+        <button onClick={agregarJuego}>Agregar</button>
+      )}
 
       <ul>
-        {juegos.map(juego => (
-          <li key={juego._id}>
-            <strong>{juego.nombre}</strong> | {juego.categoria} | {juego.plataforma} | Stock: 
-            <input
-              type="number"
-              value={juego.stock}
-              onChange={e => actualizarJuego(juego._id, 'stock', parseInt(e.target.value))}
-              style={{ width: '60px', marginLeft: '0.5rem' }}
-            />
-            <button onClick={() => eliminarJuego(juego._id)}>Eliminar</button>
+        {juegos.map(j => (
+          <li key={j._id}>
+            <strong>{j.nombre}</strong> - {j.plataforma} - {j.categoria} - Stock: {j.stock}
+            <button onClick={() => iniciarEdicion(j)}>Editar</button>
+            <button onClick={() => eliminarJuego(j._id)}>Eliminar</button>
           </li>
         ))}
       </ul>
