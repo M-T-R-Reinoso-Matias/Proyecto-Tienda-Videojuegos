@@ -9,4 +9,4 @@ const ClienteSchema = new mongoose.Schema({
   direccion: { type: String }
 });
 
-module.exports = mongoose.model('Cliente', ClienteSchema);
+module.exports = mongoose.models.Cliente || mongoose.model('Cliente', ClienteSchema);

@@ -3,10 +3,10 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 
 const userSchema = new mongoose.Schema({
-  nombre: String,
-  email: { type: String, unique: true },
+  nombre:   String,
+  email:    { type: String, unique: true },
   password: String,
-  rol: { type: String, enum: ['visitante', 'cliente', 'admin'], default: 'cliente' }
+  rol:      { type: String, enum: ['visitante', 'cliente', 'admin'], default: 'cliente' }
 });
 
 userSchema.pre('save', async function(next) {
@@ -15,4 +15,6 @@ userSchema.pre('save', async function(next) {
   next();
 });
 
-module.exports = mongoose.model('User', userSchema);
+module.exports = mongoose.models.User || mongoose.model('user', userSchema);
+
+

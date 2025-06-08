@@ -1,34 +1,62 @@
 // routes/auth.js
 const express = require('express');
+const router = express.Router();
+const User = require('../models/user');
+const Carrito = require('../models/carrito'); // 👈 importamos el modelo de carrito
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const User = require('../models/user');
-const router = express.Router();
 
 // Registro
 router.post('/register', async (req, res) => {
   const { nombre, correo, contraseña } = req.body;
-  if (!nombre || !correo || !contraseña) return res.status(400).json({ error: 'Faltan campos' });
+  if (!nombre || !correo || !contraseña)
+    return res.status(400).json({ error: 'Campos obligatorios' });
 
-  const existente = await User.findOne({ email: correo });
-  if (existente) return res.status(400).json({ error: 'Ya existe una cuenta con ese correo' });
+  try {
+    const existe = await User.findOne({ email: correo });
+    if (existe) return res.status(400).json({ error: 'Correo ya registrado' });
 
-  const user = new User({ nombre, email: correo, password: contraseña });
-  await user.save();
-  res.status(201).json({ mensaje: 'Usuario registrado' });
+    const hash = await bcrypt.hash(contraseña, 10); // 👈 encriptamos contraseña
+    const nuevoUsuario = new User({ nombre, email: correo, password: hash });
+    const usuarioGuardado = await nuevoUsuario.save();
+
+    // ✅ Crear carrito vacío al registrar el usuario
+    const carrito = new Carrito({ usuario: usuarioGuardado._id, items: [] });
+    await carrito.save();
+
+    res.status(201).json({ mensaje: 'Usuario creado y carrito inicializado' });
+  } catch (err) {
+    console.error('Error en /register:', err);
+    res.status(500).json({ error: 'Error al registrar' });
+  }
 });
+
 
 // Login
 router.post('/login', async (req, res) => {
   const { correo, password } = req.body;
-  const user = await User.findOne({ email: correo });
-  if (!user) return res.status(400).json({ error: 'Correo no registrado' });
 
-  const esValido = await bcrypt.compare(password, user.password);
-  if (!esValido) return res.status(400).json({ error: 'Contraseña incorrecta' });
+  try {
+    const usuario = await User.findOne({ email: correo });
+    if (!usuario) return res.status(400).json({ error: 'Correo o contraseña incorrectos' });
 
-  const token = jwt.sign({ id: user._id, rol: user.rol }, process.env.JWT_SECRET, { expiresIn: '2h' });
-  res.json({ token, rol: user.rol });
+    const match = await bcrypt.compare(password, usuario.password);
+    if (!match) return res.status(400).json({ error: 'Correo o contraseña incorrectos' });
+
+    const token = jwt.sign({ id: usuario._id }, process.env.JWT_SECRET, { expiresIn: '2h' });
+
+    res.json({
+      token,
+      usuario: {
+        nombre: usuario.nombre,
+        rol: usuario.rol
+      }
+    });
+  } catch (err) {
+    res.status(500).json({ error: 'Error al iniciar sesión' });
+  }
 });
 
+
 module.exports = router;
+

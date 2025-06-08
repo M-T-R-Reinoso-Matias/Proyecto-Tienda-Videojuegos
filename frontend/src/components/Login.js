@@ -12,18 +12,22 @@ function Login() {
     e.preventDefault();
     try {
       const res = await api.post('/auth/login', { correo, password });
+
+      // Guarda el token y el objeto completo del usuario
       localStorage.setItem('token', res.data.token);
-      localStorage.setItem('rol', res.data.rol);
+      localStorage.setItem('usuario', JSON.stringify(res.data.usuario));
+
       alert('✅ Inicio de sesión exitoso');
 
-      // Redirección según rol
-      if (res.data.rol === 'admin') {
+      // Redirección según el rol del usuario
+      const rol = res.data.usuario.rol;
+      if (rol === 'admin') {
         navigate('/admin');
       } else {
         navigate('/cliente');
       }
     } catch (err) {
-      alert('❌ Error al iniciar sesión: ' + err.response.data.error);
+      alert('❌ Error al iniciar sesión: ' + (err.response?.data?.error || 'Error desconocido'));
     }
   };
 
@@ -52,3 +56,4 @@ function Login() {
 }
 
 export default Login;
+
