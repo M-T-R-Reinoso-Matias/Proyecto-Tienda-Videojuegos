@@ -9,6 +9,7 @@ const userSchema = new mongoose.Schema({
   rol:      { type: String, enum: ['visitante', 'cliente', 'admin'], default: 'cliente' }
 });
 
+// Aquí haces hash solo cuando se crea o modifica la contraseña
 userSchema.pre('save', async function(next) {
   if (!this.isModified('password')) return next();
   this.password = await bcrypt.hash(this.password, 10);
@@ -16,5 +17,6 @@ userSchema.pre('save', async function(next) {
 });
 
 module.exports = mongoose.models.User || mongoose.model('user', userSchema);
+
 
 

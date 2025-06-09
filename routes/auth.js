@@ -1,14 +1,14 @@
-// routes/auth.js
 const express = require('express');
 const router = express.Router();
 const User = require('../models/user');
-const Carrito = require('../models/carrito'); // 👈 importamos el modelo de carrito
+const Carrito = require('../models/carrito'); 
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
 // Registro
 router.post('/register', async (req, res) => {
   const { nombre, correo, contraseña } = req.body;
+  console.log('Registro recibido:', req.body);
   if (!nombre || !correo || !contraseña)
     return res.status(400).json({ error: 'Campos obligatorios' });
 
@@ -16,11 +16,11 @@ router.post('/register', async (req, res) => {
     const existe = await User.findOne({ email: correo });
     if (existe) return res.status(400).json({ error: 'Correo ya registrado' });
 
-    const hash = await bcrypt.hash(contraseña, 10); // 👈 encriptamos contraseña
-    const nuevoUsuario = new User({ nombre, email: correo, password: hash });
+    // OJO: guardamos contraseña tal cual, el hash lo hace el pre-save del schema
+    const nuevoUsuario = new User({ nombre, email: correo, password: contraseña });
     const usuarioGuardado = await nuevoUsuario.save();
 
-    // ✅ Crear carrito vacío al registrar el usuario
+    // Crear carrito vacío
     const carrito = new Carrito({ usuario: usuarioGuardado._id, items: [] });
     await carrito.save();
 
@@ -31,13 +31,13 @@ router.post('/register', async (req, res) => {
   }
 });
 
-
 // Login
 router.post('/login', async (req, res) => {
-  const { correo, password } = req.body;
+  const { email, password } = req.body;
+  console.log('Login recibido:', req.body);
 
   try {
-    const usuario = await User.findOne({ email: correo });
+    const usuario = await User.findOne({ email });
     if (!usuario) return res.status(400).json({ error: 'Correo o contraseña incorrectos' });
 
     const match = await bcrypt.compare(password, usuario.password);
@@ -56,7 +56,6 @@ router.post('/login', async (req, res) => {
     res.status(500).json({ error: 'Error al iniciar sesión' });
   }
 });
-
 
 module.exports = router;
 

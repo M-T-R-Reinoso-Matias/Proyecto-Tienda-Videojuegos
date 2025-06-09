@@ -4,14 +4,14 @@ import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 
 function Login() {
-  const [correo, setCorreo] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      const res = await api.post('/auth/login', { correo, password });
+      const res = await api.post('/auth/login', { email, password });
 
       // Guarda el token y el objeto completo del usuario
       localStorage.setItem('token', res.data.token);
@@ -38,8 +38,8 @@ function Login() {
         <input
           type="email"
           placeholder="Correo"
-          value={correo}
-          onChange={(e) => setCorreo(e.target.value)}
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
           required
         /><br />
         <input
@@ -56,4 +56,5 @@ function Login() {
 }
 
 export default Login;
+
 

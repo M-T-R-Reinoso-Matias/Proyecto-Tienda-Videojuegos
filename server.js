@@ -16,7 +16,7 @@ const carrito       = require('./routes/carrito');
 const app = express();
 connectDB();
 app.use(cors());
-app.use(bodyParser.json());
+app.use(express.json());
 app.use('/api/productos',   productos);
 app.use('/api/clientes',     clientes);
 app.use('/api/pedidos',       pedidos);
