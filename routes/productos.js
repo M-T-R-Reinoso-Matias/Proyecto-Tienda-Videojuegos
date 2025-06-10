@@ -3,15 +3,33 @@ const express = require('express');
 const router = express.Router();
 const Producto = require('../models/producto');
 
+// Middleware de validación para crear y actualizar
+const validarProducto = (req, res, next) => {
+  const { id_producto, nombre, precio, stock, categoria } = req.body;
+
+  if (!id_producto || typeof id_producto !== 'string') {
+    return res.status(400).json({ error: 'El ID de producto es obligatorio y debe ser un texto.' });
+  }
+  if (!nombre || typeof nombre !== 'string') {
+    return res.status(400).json({ error: 'El nombre es obligatorio y debe ser un texto.' });
+  }
+  if (precio == null || typeof precio !== 'number' || precio <= 0) {
+    return res.status(400).json({ error: 'El precio debe ser un número mayor a 0.' });
+  }
+  if (stock == null || typeof stock !== 'number' || stock < 0) {
+    return res.status(400).json({ error: 'El stock no puede ser negativo.' });
+  }
+  if (!categoria || typeof categoria !== 'string') {
+    return res.status(400).json({ error: 'La categoría es obligatoria y debe ser un texto.' });
+  }
+
+  next();
+};
+
 // Crear un nuevo producto con validaciones
-router.post('/', async (req, res) => {
+router.post('/', validarProducto, async (req, res) => {
   try {
     const { id_producto, nombre, precio, stock, categoria } = req.body;
-
-    // Verificar campos obligatorios
-    if (!id_producto || !nombre || !precio || !stock || !categoria) {
-      return res.status(400).json({ error: 'Todos los campos son obligatorios' });
-    }
 
     // Verificar si ya existe un producto con el mismo ID
     const existente = await Producto.findOne({ id_producto });
@@ -19,7 +37,6 @@ router.post('/', async (req, res) => {
       return res.status(400).json({ error: 'Ya existe un producto con ese ID' });
     }
 
-    // Crear y guardar producto
     const nuevoProducto = new Producto({ id_producto, nombre, precio, stock, categoria });
     await nuevoProducto.save();
 
@@ -40,7 +57,7 @@ router.get('/', async (req, res) => {
   }
 });
 
-// GET /api/productos/buscar
+// Buscar productos por nombre o categoría
 router.get('/buscar', async (req, res) => {
   const { query } = req.query;
 
@@ -58,7 +75,7 @@ router.get('/buscar', async (req, res) => {
   }
 });
 
-// GET /api/productos/sin-stock
+// Obtener productos sin stock
 router.get('/sin-stock', async (req, res) => {
   try {
     const productos = await Producto.find({ stock: 0 });
@@ -68,6 +85,24 @@ router.get('/sin-stock', async (req, res) => {
   }
 });
 
+// Actualizar producto con validaciones
+router.put('/:id', validarProducto, async (req, res) => {
+  try {
+    const productoActualizado = await Producto.findByIdAndUpdate(
+      req.params.id,
+      req.body,
+      { new: true }
+    );
+
+    if (!productoActualizado) {
+      return res.status(404).json({ error: 'Producto no encontrado' });
+    }
+
+    res.json(productoActualizado);
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
 
 // Eliminar producto por ID
 router.delete('/:id', async (req, res) => {
@@ -80,4 +115,5 @@ router.delete('/:id', async (req, res) => {
 });
 
 module.exports = router;
+
 

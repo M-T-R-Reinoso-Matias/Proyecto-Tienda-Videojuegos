@@ -143,9 +143,9 @@ function Home() {
 
       {/* Solo los clientes o visitantes pueden ver estos botones */}
       {(!usuario || usuario.rol === 'cliente') && (
-        <div style={{ marginBottom: '1rem' }}>
+        <div style={{ marginBottom: '1rem',  }}>
           <Link to="/carrito"><button>🛒 Ver carrito</button></Link>
-          <Link to="/juegos" style={{ marginLeft: '1rem' }}><button>🎮 Ver juegos</button></Link>
+          {/*<Link to="/juegos" style={{ marginLeft: '1rem' }}><button>🎮 Ver juegos</button></Link>*/}
         </div>
       )}
 

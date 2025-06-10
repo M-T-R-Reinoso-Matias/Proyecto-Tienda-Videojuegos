@@ -4,7 +4,6 @@ import Clientes from './Clientes';
 import Pedidos from './Pedidos';
 import Juegos from './Juegos';
 import BuscarProducto from './BuscarProducto';
-import ProductosSinStock from './ProductosSinStock';
 import { useNavigate } from 'react-router-dom';
 
 function AdminPanel() {
@@ -27,7 +26,7 @@ function AdminPanel() {
         <button onClick={() => setSeccion('clientes')} className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">Clientes</button>
         <button onClick={() => setSeccion('pedidos')} className="px-4 py-2 bg-yellow-600 text-white rounded hover:bg-yellow-700">Pedidos</button>
         <button onClick={() => setSeccion('juegos')} className="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700">Juegos</button>
-        <button onClick={() => navigate('/')} className="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700">Ir al Inicio</button>
+        <button onClick={() => navigate    ('/')} className="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700">Ir al Inicio</button>
         <button onClick={logout} className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700">Cerrar Sesión</button>
       </div>
 
@@ -36,7 +35,6 @@ function AdminPanel() {
           <>
             <Productos />
             <BuscarProducto />
-            <ProductosSinStock />
           </>
         )}
         {seccion === 'clientes' && <Clientes usuario={usuario} />}
