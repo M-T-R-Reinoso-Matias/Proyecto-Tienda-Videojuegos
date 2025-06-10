@@ -53,7 +53,7 @@ function Pedidos({ refrescar }) {
   };
 
   return (
-    <div style={{ width: '100%', maxWidth: '900px', margin: '2rem auto' }}>
+    <div style={{ width: '100%', maxWidth: 'auto 900px', margin: '2rem auto' }}>
       <h2>Lista de Pedidos</h2>
 
       {pedidos.length === 0 ? (
@@ -61,7 +61,8 @@ function Pedidos({ refrescar }) {
       ) : (
         pedidos.map((pedido) => {
           // Usamos createdAt en lugar de fecha_pedido
-          const fecha = new Date(pedido.createdAt).toLocaleDateString();
+          const fecha = pedido.fecha_pedido ? new Date(pedido.fecha_pedido).toLocaleDateString() : 'Fecha no disponible';
+
 
           return (
             <div
