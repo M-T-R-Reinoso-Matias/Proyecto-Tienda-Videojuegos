@@ -60,6 +60,7 @@ function Registro() {
         >
           Registrarse
         </button>
+        <button style={{ marginTop: '1rem' }} onClick={() => navigate('/')}>⬅️ Volver a Inicio </button>
         {error && <p className="text-red-600 text-sm text-center">{error}</p>}
       </form>
     </div>

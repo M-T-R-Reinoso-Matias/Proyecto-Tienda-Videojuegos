@@ -1,7 +1,7 @@
-// routes/clientes.js
 const express = require('express');
 const routerC = express.Router();
 const Cliente = require('../models/cliente');
+const Pedido  = require('../models/pedido');
 
 // POST - Agregar nuevo cliente con validación de duplicados
 routerC.post('/', async (req, res) => {
@@ -35,6 +35,28 @@ routerC.get('/', async (req, res) => {
   }
 });
 
+// GET /clientes/compradores - obtener clientes que hicieron al menos un pedido
+routerC.get('/compradores', async (req, res) => {
+  try {
+    const pedidos = await Pedido.find({}, 'cliente');
+
+    const clientesMap = new Map();
+
+    pedidos.forEach(pedido => {
+      if (pedido.cliente && pedido.cliente.codigo_cliente) {
+        clientesMap.set(pedido.cliente.codigo_cliente, pedido.cliente);
+      }
+    });
+
+    const clientesUnicos = Array.from(clientesMap.values());
+
+    res.json(clientesUnicos);
+  } catch (error) {
+    console.error('Error en /clientes/compradores:', error);
+    res.status(500).json({ error: 'Error al obtener clientes compradores' });
+  }
+});
+
 // DELETE - Eliminar cliente por ID (_id de MongoDB)
 routerC.delete('/:id', async (req, res) => {
   try {
@@ -51,3 +73,4 @@ routerC.delete('/:id', async (req, res) => {
 });
 
 module.exports = routerC;
+

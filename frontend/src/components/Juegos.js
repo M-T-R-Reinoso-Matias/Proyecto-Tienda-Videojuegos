@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 
 function Juegos() {
@@ -95,30 +96,32 @@ function Juegos() {
   };
 
   const agregarAlCarrito = async (juego) => {
-  if (!usuario) return alert('🔒 Debes iniciar sesión para comprar.');
+    if (!usuario) return alert('🔒 Debes iniciar sesión para comprar.');
+    if (usuario.rol !== 'cliente') return alert('🔒 Solo los clientes pueden agregar productos al carrito.');
 
-  if (juego.stock <= 0) {
-    return alert('❌ No hay stock disponible de este juego.');
-  }
+    if (juego.stock <= 0) {
+      return alert('❌ No hay stock disponible de este juego.');
+    }
 
-  try {
-    // Llamada al backend para agregar al carrito (y que también reduzca stock)
-    await api.post('/carrito/agregar', {
-      productoId: juego._id,
-      tipo: 'Juego'
-    });
+    try {
+      await api.post('/carrito/agregar', {
+        productoId: juego._id,
+        tipo: 'Juego'
+      });
 
-    fetchJuegos(); // refrescar stock en pantalla
-    alert(`🕹️ "${juego.nombre}" agregado al carrito`);
-  } catch (err) {
-    alert('❌ Error al agregar al carrito: ' + (err.response?.data?.mensaje || err.message));
-  }
-};
+      fetchJuegos(); // refrescar stock en pantalla
+      alert(`🕹️ "${juego.nombre}" agregado al carrito`);
+    } catch (err) {
+      alert('❌ Error al agregar al carrito: ' + (err.response?.data?.mensaje || err.message));
+    }
+  };
 
+  const navigate = useNavigate();
 
   return (
     <div style={{ padding: '2rem' }}>
       <h2>🎮 Juegos Físicos</h2>
+      <button style={{ marginTop: '1rem' }} onClick={() => navigate('/')}>⬅️ Volver </button>
 
       {esAdmin && (
         <div style={{ marginBottom: '1rem' }}>
@@ -139,9 +142,9 @@ function Juegos() {
       <ul>
         {juegos.map((j) => (
           <li key={j._id} style={{ marginBottom: '1rem' }}>
-            <strong>{j.nombre}</strong> - {j.plataforma} - {j.categoria}-💲{j.precio} -  Stock: {j.stock}
+            <strong>{j.nombre}</strong> - {j.plataforma} - {j.categoria} - 💲{j.precio} - Stock: {j.stock}
 
-            {usuario && (
+            {usuario?.rol === 'cliente' && (
               <button onClick={() => agregarAlCarrito(j)} style={{ marginLeft: '1rem' }}>🛒 Agregar</button>
             )}
 
@@ -159,5 +162,6 @@ function Juegos() {
 }
 
 export default Juegos;
+
 
 

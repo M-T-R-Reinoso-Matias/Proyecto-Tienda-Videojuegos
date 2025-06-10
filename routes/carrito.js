@@ -1,6 +1,8 @@
 // routes/carrito.js
 const express = require('express');
 const router = express.Router();
+const Pedido = require('../models/pedido');
+const Cliente = require('../models/cliente');
 const Carrito = require('../models/carrito');
 const Producto = require('../models/producto');
 const Juego = require('../models/juego');
@@ -21,12 +23,12 @@ router.get('/', verificarToken, async (req, res) => {
 
     const itemsFormateados = itemsValidos.map(item => {
       const itemData = item.producto || item.juego;
-      const tipo = item.producto ? 'Producto' : 'Juego';
+      const tipo = item.producto ? 'producto' : 'juego';
 
       return {
-        tipo,
+        tipo, // "producto" o "juego"
         cantidad: item.cantidad,
-        producto: {
+        [tipo]: {
           _id: itemData._id,
           nombre: itemData.nombre,
           precio: itemData.precio,
@@ -42,7 +44,6 @@ router.get('/', verificarToken, async (req, res) => {
     res.status(500).json({ mensaje: 'Error al obtener el carrito', error: err.message });
   }
 });
-
 
 // ✅ POST: Agregar producto o juego al carrito
 router.post('/agregar', verificarToken, async (req, res) => {
@@ -106,10 +107,6 @@ router.post('/agregar', verificarToken, async (req, res) => {
   }
 });
 
-
-
-
-
 // ✅ POST: Eliminar producto o juego específico del carrito y restaurar stock
 router.post('/eliminar', verificarToken, async (req, res) => {
   const { productoId, tipo } = req.body;
@@ -117,7 +114,10 @@ router.post('/eliminar', verificarToken, async (req, res) => {
     return res.status(400).json({ mensaje: 'Faltan campos' });
   }
 
-  const Modelo = tipo === 'Producto' ? Producto : tipo === 'Juego' ? Juego : null;
+  const tipoNormalizado = tipo.toLowerCase();
+  const Modelo = tipoNormalizado === 'producto' ? Producto :
+                 tipoNormalizado === 'juego' ? Juego : null;
+
   if (!Modelo) return res.status(400).json({ mensaje: 'Tipo inválido' });
 
   try {
@@ -125,7 +125,7 @@ router.post('/eliminar', verificarToken, async (req, res) => {
     if (!carrito) return res.status(404).json({ mensaje: 'Carrito no encontrado' });
 
     const index = carrito.items.findIndex((i) =>
-      tipo === 'Producto'
+      tipoNormalizado === 'producto'
         ? i.producto?.toString() === productoId
         : i.juego?.toString() === productoId
     );
@@ -145,6 +145,72 @@ router.post('/eliminar', verificarToken, async (req, res) => {
     res.json({ mensaje: 'Item eliminado del carrito' });
   } catch (err) {
     res.status(500).json({ mensaje: 'Error al eliminar del carrito', error: err.message });
+  }
+});
+
+// ✅ POST: Finalizar compra y generar un pedido
+router.post('/finalizar', verificarToken, async (req, res) => {
+  try {
+    const carrito = await Carrito.findOne({ usuario: req.user._id })
+      .populate('items.producto')
+      .populate('items.juego');
+
+    if (!carrito || carrito.items.length === 0) {
+      return res.status(400).json({ mensaje: 'El carrito está vacío' });
+    }
+
+    const cliente = await Cliente.findOne({ usuario: req.user._id });
+    if (!cliente) {
+      return res.status(404).json({ mensaje: 'Información del cliente no encontrada' });
+    }
+
+    const productos = [];
+    const juegos = [];
+    let total = 0;
+
+    for (const item of carrito.items) {
+      if (item.producto) {
+        productos.push({
+          id_producto: item.producto._id,
+          nombre: item.producto.nombre,
+          precio_unitario: item.producto.precio,
+          cantidad: item.cantidad
+        });
+        total += item.producto.precio * item.cantidad;
+      } else if (item.juego) {
+        juegos.push({
+          id_juego: item.juego._id,
+          nombre: item.juego.nombre,
+          precio_unitario: item.juego.precio,
+          cantidad: item.cantidad,
+          categoria: item.juego.categoria
+        });
+        total += item.juego.precio * item.cantidad;
+      }
+    }
+
+    const nuevoPedido = new Pedido({
+      cliente: {
+        id_cliente: new mongoose.Types.ObjectId(cliente._id),
+        nombre: cliente.nombre,
+        correo: cliente.correo,
+        telefono: cliente.telefono,
+        direccion: cliente.direccion
+      },
+      productos,
+      juegos,
+      total
+    });
+
+    await nuevoPedido.save();
+
+    carrito.items = [];
+    await carrito.save();
+
+    res.json({ mensaje: '✅ Pedido generado correctamente' });
+  } catch (err) {
+    console.error('Error al finalizar compra:', err);
+    res.status(500).json({ mensaje: 'Error al finalizar compra', error: err.message });
   }
 });
 
@@ -187,6 +253,3 @@ router.post('/vaciar', verificarToken, async (req, res) => {
 });
 
 module.exports = router;
-
-
-

@@ -16,6 +16,7 @@ function Login() {
       // Guarda el token y el objeto completo del usuario
       localStorage.setItem('token', res.data.token);
       localStorage.setItem('usuario', JSON.stringify(res.data.usuario));
+      localStorage.setItem('rol', res.data.usuario.rol);
 
       alert('✅ Inicio de sesión exitoso');
 
@@ -24,7 +25,7 @@ function Login() {
       if (rol === 'admin') {
         navigate('/admin');
       } else {
-        navigate('/cliente');
+        navigate('/');
       }
     } catch (err) {
       alert('❌ Error al iniciar sesión: ' + (err.response?.data?.error || 'Error desconocido'));
@@ -50,6 +51,7 @@ function Login() {
           required
         /><br />
         <button type="submit">Iniciar Sesión</button>
+        <button style={{ marginTop: '1rem' }} onClick={() => navigate('/')}>⬅️ Volver a Inicio </button>
       </form>
     </div>
   );

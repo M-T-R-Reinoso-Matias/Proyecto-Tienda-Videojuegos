@@ -1,3 +1,4 @@
+// src/components/Pedidos.js
 import React, { useEffect, useRef, useState } from 'react';
 import api from '../services/api';
 
@@ -8,11 +9,12 @@ function Pedidos({ refrescar }) {
   useEffect(() => {
     clickSoundRef.current = new Audio('/mario-bros-lose-life.mp3');
     fetchPedidos();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Este useEffect se dispara cada vez que refrescar cambie
   useEffect(() => {
     fetchPedidos();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [refrescar]);
 
   const reproducirSonido = () => {
@@ -25,6 +27,7 @@ function Pedidos({ refrescar }) {
   const fetchPedidos = async () => {
     try {
       const res = await api.get('/pedidos');
+      
       setPedidos(res.data);
     } catch (error) {
       console.error('Error al obtener pedidos:', error);
@@ -50,17 +53,15 @@ function Pedidos({ refrescar }) {
   };
 
   return (
-    <div style={{ width: '100%', maxWidth: '23px 900px', margin: '2rem auto' }}>
+    <div style={{ width: '100%', maxWidth: '900px', margin: '2rem auto' }}>
       <h2>Lista de Pedidos</h2>
 
       {pedidos.length === 0 ? (
         <p style={{ color: '#aaa' }}>No hay pedidos registrados.</p>
       ) : (
-        pedidos.map(pedido => {
-          const totalCalculado = pedido.productos.reduce(
-            (acc, prod) => acc + prod.cantidad * prod.precio_unitario,
-            0
-          );
+        pedidos.map((pedido) => {
+          // Usamos createdAt en lugar de fecha_pedido
+          const fecha = new Date(pedido.createdAt).toLocaleDateString();
 
           return (
             <div
@@ -72,29 +73,45 @@ function Pedidos({ refrescar }) {
                 boxShadow: '0 0 20px #00ffcc50',
                 padding: '1.5rem',
                 marginBottom: '2rem',
-                animation: 'fadeIn 1s ease-in-out'
+                animation: 'fadeIn 1s ease-in-out',
               }}
             >
               <h3>Pedido #{pedido._id}</h3>
-              <p><strong>Cliente:</strong> {pedido.cliente.nombre}</p>
-              <p><strong>Correo:</strong> {pedido.cliente.correo}</p>
-              <p><strong>Teléfono:</strong> {pedido.cliente.telefono}</p>
-              <p><strong>Dirección:</strong> {pedido.cliente.direccion}</p>
+              <p><strong>Fecha:</strong> {fecha}</p>
+              <p><strong>Cliente:</strong> {pedido.cliente?.nombre}</p>
+              <p><strong>Correo:</strong> {pedido.cliente?.correo}</p>
+              <p><strong>Teléfono:</strong> {pedido.cliente?.telefono}</p>
+              <p><strong>Dirección:</strong> {pedido.cliente?.direccion}</p>
               <p><strong>Estado:</strong> <span style={{ color: '#00ffcc' }}>{pedido.estado}</span></p>
 
-              <div style={{ marginTop: '1rem', textAlign: 'left' }}>
-                <h4 style={{ color: '#00ffcc' }}>Productos:</h4>
-                <ul>
-                  {pedido.productos.map((prod, idx) => (
-                    <li key={idx}>
-                      {prod.nombre} - {prod.cantidad} x ${prod.precio_unitario} = <strong>${(prod.cantidad * prod.precio_unitario).toFixed(2)}</strong>
-                    </li>
-                  ))}
-                </ul>
-              </div>
+              {pedido.productos?.length > 0 && (
+                <div style={{ marginTop: '1rem' }}>
+                  <h4 style={{ color: '#00ffcc' }}>Productos:</h4>
+                  <ul>
+                    {pedido.productos.map((prod, idx) => (
+                      <li key={idx}>
+                        {prod.nombre} - {prod.cantidad} x ${prod.precio_unitario} = <strong>${(prod.cantidad * prod.precio_unitario).toFixed(2)}</strong>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {pedido.juegos?.length > 0 && (
+                <div style={{ marginTop: '1rem' }}>
+                  <h4 style={{ color: '#00ffcc' }}>Juegos:</h4>
+                  <ul>
+                    {pedido.juegos.map((juego, idx) => (
+                      <li key={idx}>
+                        {juego.nombre} ({juego.categoria}) - {juego.cantidad} x ${juego.precio_unitario} = <strong>${(juego.cantidad * juego.precio_unitario).toFixed(2)}</strong>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
 
               <p style={{ marginTop: '1rem', fontSize: '1.2rem', color: '#00ffcc' }}>
-                <strong>Total:</strong> ${totalCalculado.toFixed(2)}
+                <strong>Total:</strong> ${pedido.total?.toFixed(2)}
               </p>
 
               <div style={{ marginTop: '1.5rem' }}>
@@ -129,3 +146,5 @@ function Pedidos({ refrescar }) {
 }
 
 export default Pedidos;
+
+
