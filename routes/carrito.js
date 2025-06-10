@@ -149,6 +149,7 @@ router.post('/eliminar', verificarToken, async (req, res) => {
 });
 
 // ✅ POST: Finalizar compra y generar un pedido
+// ✅ POST: Finalizar compra y generar un pedido
 router.post('/finalizar', verificarToken, async (req, res) => {
   try {
     const carrito = await Carrito.findOne({ usuario: req.user._id })
@@ -191,7 +192,7 @@ router.post('/finalizar', verificarToken, async (req, res) => {
 
     const nuevoPedido = new Pedido({
       cliente: {
-        id_cliente: new mongoose.Types.ObjectId(cliente._id),
+        id_cliente: cliente.id_cliente, // ✅ CORREGIDO: usa el ID secuencial del cliente (ej. CLI0001)
         nombre: cliente.nombre,
         correo: cliente.correo,
         telefono: cliente.telefono,
@@ -209,10 +210,11 @@ router.post('/finalizar', verificarToken, async (req, res) => {
 
     res.json({ mensaje: '✅ Pedido generado correctamente' });
   } catch (err) {
-    console.error('Error al finalizar compra:', err);
+    console.error('Error al finalizar compra:', err); // 👈 importante para depuración
     res.status(500).json({ mensaje: 'Error al finalizar compra', error: err.message });
   }
 });
+
 
 
 // ✅ POST: Vaciar todo el carrito y restaurar el stock

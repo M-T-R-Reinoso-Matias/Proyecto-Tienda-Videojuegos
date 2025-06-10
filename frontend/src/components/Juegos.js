@@ -1,167 +1,209 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 
-function Juegos() {
+const clickSound = new Audio('/mario-level-up-app.mp3');
+
+const handleClick = () => {
+  clickSound.play();
+};
+
+export default function Juegos() {
   const [juegos, setJuegos] = useState([]);
-  const [nuevoJuego, setNuevoJuego] = useState({
-    nombre: '',
-    plataforma: '',
-    categoria: '',
-    stock: 0,
-    precio: ''
+  const [nuevo, setNuevo] = useState({
+    nombre: '', plataforma: '', categoria: '', precio: 0, stock: 0
   });
-  const [editarId, setEditarId] = useState(null);
+  const [editando, setEditando] = useState({});
+  const [busqueda, setBusqueda] = useState('');
+  const [filtroSinStock, setFiltroSinStock] = useState(false);
 
   const usuario = JSON.parse(localStorage.getItem('usuario'));
+  const token = localStorage.getItem('token');
   const esAdmin = usuario?.rol === 'admin';
 
-  const fetchJuegos = async () => {
-    const res = await api.get('/juegos');
-    setJuegos(res.data);
+  const fetch = async () => {
+    try {
+      const res = await api.get('/juegos', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setJuegos(res.data);
+    } catch (error) {
+      console.error('Error al cargar juegos:', error);
+    }
   };
 
-  useEffect(() => {
-    fetchJuegos();
-  }, []);
+  useEffect(() => { fetch(); }, []);
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setNuevoJuego({ ...nuevoJuego, [name]: value });
-  };
-
-  const agregarJuego = async () => {
-    const { nombre, plataforma, categoria, stock, precio } = nuevoJuego;
-
-    if (
-      !nombre.trim() || !plataforma.trim() || !categoria.trim() ||
-      isNaN(stock) || stock < 0 ||
-      isNaN(precio) || precio < 0
-    ) {
-      alert('⚠️ Todos los campos son obligatorios y los valores deben ser válidos.');
+  const agregar = async () => {
+    if (!nuevo.nombre || !nuevo.plataforma || !nuevo.categoria || nuevo.precio <= 0 || nuevo.stock < 0) {
+      alert('⚠️ Completa todos los campos correctamente.\n- Todos son obligatorios.\n- Precio mayor a 0.\n- Stock no negativo.');
       return;
     }
 
     try {
-      await api.post('/juegos', {
-        nombre,
-        plataforma,
-        categoria,
-        stock: Number(stock),
-        precio: Number(precio)
+      await api.post('/juegos', nuevo, {
+        headers: { Authorization: `Bearer ${token}` }
       });
-      setNuevoJuego({ nombre: '', plataforma: '', categoria: '', stock: 0, precio: '' });
-      fetchJuegos();
-      alert('✅ Juego agregado');
-    } catch (err) {
-      console.error(err);
-      alert('❌ Error del servidor: ' + (err.response?.data?.error || err.message));
+      fetch();
+      setNuevo({ nombre: '', plataforma: '', categoria: '', precio: 0, stock: 0 });
+      alert('✅ Juego agregado correctamente.');
+    } catch (error) {
+      console.error('Error al agregar juego:', error);
+      alert('Error: ' + (error.response?.data?.error || error.message));
     }
   };
 
-  const eliminarJuego = async (id) => {
-    if (!esAdmin) return alert('🔒 Solo los administradores pueden eliminar.');
-    if (window.confirm('¿Estás seguro de eliminar este juego?')) {
-      await api.delete(`/juegos/${id}`);
-      fetchJuegos();
+  const eliminar = async (id) => {
+    if (!esAdmin) return alert('🔒 Solo el administrador puede eliminar.');
+    if (window.confirm('¿Seguro que deseas eliminar este juego?')) {
+      try {
+        await api.delete(`/juegos/${id}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        fetch();
+      } catch (error) {
+        console.error('Error al eliminar juego:', error);
+        alert('Error al eliminar: ' + (error.response?.data?.error || error.message));
+      }
     }
   };
 
-  const iniciarEdicion = (juego) => {
-    if (!esAdmin) return alert('🔒 Solo los administradores pueden editar.');
-    setEditarId(juego._id);
-    setNuevoJuego({
-      nombre: juego.nombre,
-      plataforma: juego.plataforma,
-      categoria: juego.categoria,
-      stock: juego.stock,
-      precio: juego.precio
-    });
-  };
-
-  const guardarEdicion = async () => {
-    try {
-      await api.put(`/juegos/${editarId}`, {
-        ...nuevoJuego,
-        stock: Number(nuevoJuego.stock),
-        precio: Number(nuevoJuego.precio)
-      });
-      setEditarId(null);
-      setNuevoJuego({ nombre: '', plataforma: '', categoria: '', stock: 0, precio: '' });
-      fetchJuegos();
-      alert('✅ Juego actualizado');
-    } catch (err) {
-      alert('❌ Error: ' + err.response?.data?.error);
-    }
-  };
-
-  const agregarAlCarrito = async (juego) => {
-    if (!usuario) return alert('🔒 Debes iniciar sesión para comprar.');
-    if (usuario.rol !== 'cliente') return alert('🔒 Solo los clientes pueden agregar productos al carrito.');
-
-    if (juego.stock <= 0) {
-      return alert('❌ No hay stock disponible de este juego.');
+  const actualizar = async (id, datosActualizados) => {
+    if (!datosActualizados.nombre || !datosActualizados.plataforma || !datosActualizados.categoria ||
+        datosActualizados.precio <= 0 || datosActualizados.stock < 0) {
+      alert('⚠️ Los campos de edición no son válidos.');
+      return;
     }
 
     try {
-      await api.post('/carrito/agregar', {
-        productoId: juego._id,
-        tipo: 'Juego'
+      await api.put(`/juegos/${id}`, datosActualizados, {
+        headers: { Authorization: `Bearer ${token}` }
       });
-
-      fetchJuegos(); // refrescar stock en pantalla
-      alert(`🕹️ "${juego.nombre}" agregado al carrito`);
-    } catch (err) {
-      alert('❌ Error al agregar al carrito: ' + (err.response?.data?.mensaje || err.message));
+      alert('✅ Juego actualizado correctamente.');
+      fetch();
+      setEditando((prev) => ({ ...prev, [id]: false }));
+    } catch (error) {
+      console.error('Error al actualizar juego:', error);
+      alert('Error al actualizar: ' + (error.response?.data?.error || error.message));
     }
   };
 
-  const navigate = useNavigate();
+  const manejarCambio = (id, campo, valor) => {
+    setEditando((prev) => ({
+      ...prev,
+      [id]: { ...prev[id], [campo]: campo === 'precio' || campo === 'stock' ? +valor : valor }
+    }));
+  };
+
+  const empezarEdicion = (juego) => {
+    setEditando((prev) => ({
+      ...prev,
+      [juego._id]: { ...juego }
+    }));
+  };
+
+  const cancelarEdicion = (id) => {
+    setEditando((prev) => ({ ...prev, [id]: false }));
+  };
+
+  // 🔍 Lógica de búsqueda y filtro sin stock (corregida para evitar error)
+  const juegosFiltrados = juegos.filter(j =>
+    (j.nombre || '').toLowerCase().includes((busqueda || '').toLowerCase()) &&
+    (!filtroSinStock || j.stock === 0)
+  );
 
   return (
-    <div style={{ padding: '2rem' }}>
+    <div>
       <h2>🎮 Juegos Físicos</h2>
-      <button style={{ marginTop: '1rem' }} onClick={() => navigate('/')}>⬅️ Volver </button>
+
+      {/* 🔍 Búsqueda */}
+      <input
+        type="text"
+        placeholder="Buscar por nombre..."
+        value={busqueda}
+        onChange={e => setBusqueda(e.target.value)}
+      />
+
+      {/* 🚫 Filtro sin stock */}
+      <label style={{ marginLeft: '10px' }}>
+        <input
+          type="checkbox"
+          checked={filtroSinStock}
+          onChange={e => setFiltroSinStock(e.target.checked)}
+        />
+        Mostrar solo juegos sin stock
+      </label>
+
+      <table border="1" cellPadding="5" style={{ marginTop: '10px' }}>
+        <thead>
+          <tr>
+            <th>ID Juego</th>
+            <th>Nombre</th>
+            <th>Plataforma</th>
+            <th>Categoría</th>
+            <th>Precio</th>
+            <th>Stock</th>
+            {esAdmin && <th>Acciones</th>}
+          </tr>
+        </thead>
+        <tbody>
+          {juegosFiltrados.map(j => (
+            <tr key={j._id}>
+              <td>{j.id_juego}</td>
+              {editando[j._id] ? (
+                <>
+                  <td><input value={editando[j._id].nombre} onChange={e => manejarCambio(j._id, 'nombre', e.target.value)} /></td>
+                  <td><input value={editando[j._id].plataforma} onChange={e => manejarCambio(j._id, 'plataforma', e.target.value)} /></td>
+                  <td><input value={editando[j._id].categoria} onChange={e => manejarCambio(j._id, 'categoria', e.target.value)} /></td>
+                  <td><input type="number" value={editando[j._id].precio} onChange={e => manejarCambio(j._id, 'precio', e.target.value)} /></td>
+                  <td><input type="number" value={editando[j._id].stock} onChange={e => manejarCambio(j._id, 'stock', e.target.value)} /></td>
+                </>
+              ) : (
+                <>
+                  <td>{j.nombre}</td>
+                  <td>{j.plataforma}</td>
+                  <td>{j.categoria}</td>
+                  <td>${j.precio}</td>
+                  <td>{j.stock}</td>
+                </>
+              )}
+              {esAdmin && (
+                <td>
+                  {editando[j._id] ? (
+                    <>
+                      <button onClick={() => actualizar(j._id, editando[j._id])}>Guardar</button>
+                      <button onClick={() => cancelarEdicion(j._id)}>Cancelar</button>
+                    </>
+                  ) : (
+                    <>
+                      <button onClick={() => empezarEdicion(j)}>Editar</button>
+                      <button onClick={() => eliminar(j._id)}>Eliminar</button>
+                    </>
+                  )}
+                </td>
+              )}
+            </tr>
+          ))}
+        </tbody>
+      </table>
 
       {esAdmin && (
-        <div style={{ marginBottom: '1rem' }}>
-          <input name="nombre" placeholder="Nombre" value={nuevoJuego.nombre} onChange={handleChange} />
-          <input name="plataforma" placeholder="Plataforma" value={nuevoJuego.plataforma} onChange={handleChange} />
-          <input name="categoria" placeholder="Categoría" value={nuevoJuego.categoria} onChange={handleChange} />
-          <input name="precio" type="number" placeholder="Precio" value={nuevoJuego.precio} onChange={handleChange} />
-          <input name="stock" type="number" placeholder="Stock" value={nuevoJuego.stock} onChange={handleChange} />
-
-          {editarId ? (
-            <button onClick={guardarEdicion}>Guardar</button>
-          ) : (
-            <button onClick={agregarJuego}>Agregar</button>
-          )}
-        </div>
+        <>
+          <h3>Agregar Nuevo Juego</h3>
+          <input placeholder="Nombre" value={nuevo.nombre} onChange={e => setNuevo({ ...nuevo, nombre: e.target.value })} />
+          <input placeholder="Plataforma" value={nuevo.plataforma} onChange={e => setNuevo({ ...nuevo, plataforma: e.target.value })} />
+          <input placeholder="Categoría" value={nuevo.categoria} onChange={e => setNuevo({ ...nuevo, categoria: e.target.value })} />
+          <input type="number" placeholder="Precio" value={nuevo.precio} onChange={e => setNuevo({ ...nuevo, precio: +e.target.value })} />
+          <input type="number" placeholder="Stock" value={nuevo.stock} onChange={e => setNuevo({ ...nuevo, stock: +e.target.value })} />
+          <button onClick={() => { handleClick(); agregar(); }}>Agregar</button>
+        </>
       )}
-
-      <ul>
-        {juegos.map((j) => (
-          <li key={j._id} style={{ marginBottom: '1rem' }}>
-            <strong>{j.nombre}</strong> - {j.plataforma} - {j.categoria} - 💲{j.precio} - Stock: {j.stock}
-
-            {usuario?.rol === 'cliente' && (
-              <button onClick={() => agregarAlCarrito(j)} style={{ marginLeft: '1rem' }}>🛒 Agregar</button>
-            )}
-
-            {esAdmin && (
-              <>
-                <button onClick={() => iniciarEdicion(j)}>Editar</button>
-                <button onClick={() => eliminarJuego(j._id)}>Eliminar</button>
-              </>
-            )}
-          </li>
-        ))}
-      </ul>
     </div>
   );
 }
 
-export default Juegos;
+
+
+
 
 
 

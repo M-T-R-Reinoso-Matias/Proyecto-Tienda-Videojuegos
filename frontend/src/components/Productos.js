@@ -15,7 +15,7 @@ const handleClick = () => {
 export default function Productos() {
   const [productos, setProductos] = useState([]);
   const [productosSinStock, setProductosSinStock] = useState([]);
-  const [nuevo, setNuevo] = useState({ id_producto:'', nombre:'', precio:0, stock:0, categoria:'' });
+  const [nuevo, setNuevo] = useState({ nombre: '', precio: '', stock: '', categoria: '' });
   const [editando, setEditando] = useState({});
 
   const fetch = async () => {
@@ -33,15 +33,15 @@ export default function Productos() {
   useEffect(() => { fetch(); }, []);
 
   const agregar = async () => {
-    if (!nuevo.id_producto || !nuevo.nombre || nuevo.precio <= 0 || nuevo.stock < 0) {
-      alert('⚠️ Completa todos los campos correctamente.\n- ID y Nombre obligatorios.\n- Precio debe ser mayor a 0.\n- Stock no puede ser negativo.');
+    if (!nuevo.nombre || nuevo.precio <= 0 || nuevo.stock < 0) {
+      alert('⚠️ Completa todos los campos correctamente.\n- Nombre obligatorio.\n- Precio mayor a 0.\n- Stock no negativo.');
       return;
     }
 
     try {
       await api.post('/productos', nuevo);
       fetch();
-      setNuevo({ id_producto:'', nombre:'', precio:0, stock:0, categoria:'' });
+      setNuevo({ nombre: '', precio: 0, stock: 0, categoria: '' });
       alert('✅ Producto agregado correctamente.');
     } catch (error) {
       console.error('Error al agregar producto:', error);
@@ -50,13 +50,15 @@ export default function Productos() {
   };
 
   const eliminar = async (id) => {
-    await api.delete(`/productos/${id}`);
-    fetch();
+    if (window.confirm('¿Seguro que deseas eliminar este producto?')) {
+      await api.delete(`/productos/${id}`);
+      fetch();
+    }
   };
 
   const actualizar = async (id, datosActualizados) => {
     if (!datosActualizados.nombre || datosActualizados.precio <= 0 || datosActualizados.stock < 0) {
-      alert('⚠️ Los campos de edición no son válidos.\n- Nombre requerido.\n- Precio debe ser mayor a 0.\n- Stock no puede ser negativo.');
+      alert('⚠️ Los campos de edición no son válidos.\n- Nombre requerido.\n- Precio mayor a 0.\n- Stock no negativo.');
       return;
     }
 
@@ -141,10 +143,10 @@ export default function Productos() {
       </table>
 
       <h3>Agregar Nuevo Producto</h3>
-      <input placeholder="ID" value={nuevo.id_producto} onChange={e => setNuevo({ ...nuevo, id_producto: e.target.value })} />
-      <input placeholder="Nombre" value={nuevo.nombre} onChange={e => setNuevo({ ...nuevo, nombre: e.target.value })} />
-      <input type="number" placeholder="Precio" value={nuevo.precio} onChange={e => setNuevo({ ...nuevo, precio: +e.target.value })} />
-      <input type="number" placeholder="Stock" value={nuevo.stock} onChange={e => setNuevo({ ...nuevo, stock: +e.target.value })} />
+      {/* Se eliminó el campo de ingreso manual de ID */}
+      <input placeholder="Nombre del producto" value={nuevo.nombre} onChange={e => setNuevo({ ...nuevo, nombre: e.target.value })} />
+      <input type="number" placeholder="Precio (mayor a 0)" value={nuevo.precio} onChange={e => setNuevo({ ...nuevo, precio: +e.target.value })} />
+      <input type="number" placeholder="Stock (0 o más)" value={nuevo.stock} onChange={e => setNuevo({ ...nuevo, stock: +e.target.value })} />
       <input placeholder="Categoría" value={nuevo.categoria} onChange={e => setNuevo({ ...nuevo, categoria: e.target.value })} />
       <button onClick={() => { handleClick(); agregar(); }}>Agregar</button>
 
@@ -165,5 +167,6 @@ export default function Productos() {
     </div>
   );
 }
+
 
 

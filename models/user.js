@@ -7,7 +7,7 @@ const userSchema = new mongoose.Schema({
   email:    { type: String, unique: true },
   password: String,
   rol:      { type: String, enum: ['visitante', 'cliente', 'admin'], default: 'cliente' }
-});
+}, { versionKey: false },);
 
 // Aquí haces hash solo cuando se crea o modifica la contraseña
 userSchema.pre('save', async function(next) {

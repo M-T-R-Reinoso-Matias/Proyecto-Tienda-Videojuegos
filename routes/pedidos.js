@@ -1,10 +1,24 @@
-// routes/pedidos.js
 const express = require('express');
 const router = express.Router();
 const Carrito = require('../models/carrito');
 const Pedido = require('../models/pedido');
 const Cliente = require('../models/cliente');
 const { verificarToken } = require('../middleware/auth');
+
+/**
+ * Función para generar el próximo ID secuencial de pedido (por ejemplo, PED0001)
+ */
+const generarIdPedido = async () => {
+  const ultimoPedido = await Pedido.findOne().sort({ createdAt: -1 });
+  let nuevoNumero = 1;
+
+  if (ultimoPedido && ultimoPedido.id_pedido) {
+    const ultimoNumero = parseInt(ultimoPedido.id_pedido.replace('PED', ''), 10);
+    nuevoNumero = ultimoNumero + 1;
+  }
+
+  return 'PED' + nuevoNumero.toString().padStart(4, '0');
+};
 
 /**
  * POST /api/pedidos
@@ -82,8 +96,12 @@ router.post('/', verificarToken, async (req, res) => {
       }
     }
 
+    // Generar ID secuencial de pedido
+    const nuevoIdPedido = await generarIdPedido();
+
     // Crear pedido
     const nuevoPedido = new Pedido({
+      id_pedido: nuevoIdPedido,
       cliente: {
         id_cliente: cliente._id,
         codigo_cliente: cliente.id_cliente,
@@ -169,7 +187,7 @@ router.delete('/:id', verificarToken, async (req, res) => {
     if (!pedido) {
       return res.status(404).json({ error: 'Pedido no encontrado' });
     }
-    await Pedido.findByIdAndDelete(req.params.id); // ✅ Soluciona el error.
+    await Pedido.findByIdAndDelete(req.params.id);
     return res.json({ message: 'Pedido eliminado correctamente' });
   } catch (err) {
     console.error('Error al eliminar pedido:', err);

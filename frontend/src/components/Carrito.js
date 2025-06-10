@@ -102,7 +102,7 @@ const Carrito = () => {
       <div style={{ padding: '20px', textAlign: 'center' }}>
         <h2>🛒 Carrito de Compras</h2>
         <p style={{ color: 'red' }}>
-          Solo los clientes pueden acceder al carrito.
+          Debes iniciar sesión para acceder al carrito.
         </p>
         <button onClick={() => navigate('/')}>Ir al inicio</button>
       </div>

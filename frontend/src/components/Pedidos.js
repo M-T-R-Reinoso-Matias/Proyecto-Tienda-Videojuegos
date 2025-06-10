@@ -77,7 +77,8 @@ function Pedidos({ refrescar }) {
                 animation: 'fadeIn 1s ease-in-out',
               }}
             >
-              <h3>Pedido #{pedido._id}</h3>
+              <h3 title={`MongoID: ${pedido._id}`}>Pedido {pedido.id_pedido || 'N/A'}</h3>
+              
               <p><strong>Fecha:</strong> {fecha}</p>
               <p><strong>Cliente:</strong> {pedido.cliente?.nombre}</p>
               <p><strong>Correo:</strong> {pedido.cliente?.correo}</p>
