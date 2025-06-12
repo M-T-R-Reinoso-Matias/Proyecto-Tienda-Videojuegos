@@ -37,7 +37,6 @@ cd Proyecto_Tienda
 
 PORT=5000
 MONGO_URI=mongodb+srv://<usuario>:<contraseña>@base01.kldoepc.mongodb.net/tienda_virtual
-                         User123 :  Admin123
 
 # Conectar MongoDB de forma local:
 
