@@ -3,12 +3,10 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 
-// Recibe `usuario` desde contexto o prop (asegúrate de pasarlo)
 export default function Clientes({ usuario }) {
-  /* ──────────── Estados ──────────── */
   const [clientes, setClientes] = useState([]);
-  const [usuarios, setUsuarios] = useState([]);           // ← todos los usuarios del sistema
-  const [compradores, setCompradores] = useState([]);     // ← clientes con compras
+  const [usuarios, setUsuarios] = useState([]);
+  const [compradores, setCompradores] = useState([]);
   const [nuevo, setNuevo] = useState({
     id_cliente: '',
     nombre: '',
@@ -21,7 +19,6 @@ export default function Clientes({ usuario }) {
   const navigate = useNavigate();
   const esAdmin = usuario?.rol === 'admin';
 
-  /* ──────────── Fetch helpers ──────────── */
   const fetchClientes = async () => {
     try {
       const res = await api.get('/clientes');
@@ -33,7 +30,7 @@ export default function Clientes({ usuario }) {
 
   const fetchUsuarios = async () => {
     try {
-      const res = await api.get('/usuarios');         // necesita ruta /api/usuarios
+      const res = await api.get('/usuarios');
       setUsuarios(res.data);
     } catch (e) {
       console.error('Error al cargar usuarios:', e.message);
@@ -42,20 +39,17 @@ export default function Clientes({ usuario }) {
 
   const fetchCompradores = async () => {
     try {
-      const res = await api.get('/clientes/compradores'); // necesita ruta /clientes/compradores
+      const res = await api.get('/clientes/compradores');
       setCompradores(res.data);
     } catch (e) {
       console.error('Error al cargar compradores:', e.message);
     }
   };
 
-  /* ──────────── Efectos ──────────── */
-  // Clientes (siempre)
   useEffect(() => {
     fetchClientes();
   }, []);
 
-  // Datos extra para admin
   useEffect(() => {
     if (esAdmin) {
       fetchUsuarios();
@@ -63,7 +57,6 @@ export default function Clientes({ usuario }) {
     }
   }, [esAdmin]);
 
-  /* ──────────── Acciones ──────────── */
   const agregar = async () => {
     try {
       setError('');
@@ -94,7 +87,6 @@ export default function Clientes({ usuario }) {
     }
   };
 
-  /* ──────────── Render ──────────── */
   return (
     <div style={{ padding: '1rem' }}>
       <h1>Sección de Clientes</h1>
@@ -106,20 +98,18 @@ export default function Clientes({ usuario }) {
             <p>No hay usuarios.</p>
           ) : (
             <ul>
-                {usuarios.map(u => {
-                    const esCliente = clientes.some(c => c.correo === u.email);
-                    const esComprador = compradores.some(c => c.correo === u.email);
-
-                    return (
-                  <li key={u._id}>
-                       {u.nombre} – {u.email} ({u.rol})
-                       {esCliente && <span style={{ color: 'blue' }}> [Cliente]</span>}
-                       {esComprador && <span style={{ color: 'green' }}> [Comprador]</span>}
+              {usuarios.map((u, i) => {
+                const esCliente = clientes.some(c => c.correo === u.email);
+                const esComprador = compradores.some(c => c.correo === u.email);
+                return (
+                  <li key={u._id || u.email || i}>
+                    {u.nombre} – {u.email} ({u.rol})
+                    {esCliente && <span style={{ color: 'blue' }}> [Cliente]</span>}
+                    {esComprador && <span style={{ color: 'green' }}> [Comprador]</span>}
                   </li>
-    );
-  })}
-</ul>
-
+                );
+              })}
+            </ul>
           )}
 
           <h2>🛒 Clientes que realizaron compras</h2>
@@ -127,8 +117,8 @@ export default function Clientes({ usuario }) {
             <p>Aún ningún cliente ha comprado.</p>
           ) : (
             <ul>
-              {compradores.map(c => (
-                <li key={c._id}>
+              {compradores.map((c, i) => (
+                <li key={c._id || c.correo || i}>
                   {c.nombre} – {c.correo}
                 </li>
               ))}
@@ -144,8 +134,8 @@ export default function Clientes({ usuario }) {
         <p>No hay clientes.</p>
       ) : (
         <ul>
-          {clientes.map(c => (
-            <li key={c._id}>
+          {clientes.map((c, i) => (
+            <li key={c._id || c.correo || i}>
               {c.nombre} – {c.correo}{' '}
               <button onClick={() => eliminar(c._id)}>Eliminar</button>
             </li>
