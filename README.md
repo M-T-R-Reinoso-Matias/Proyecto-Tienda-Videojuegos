@@ -33,9 +33,16 @@ cd Proyecto_Tienda
 ### 2. Configurar el backend
 📄 Crear el archivo .env en la raíz:
 
-PORT=5000
-MONGODB_URI=mongodb+srv://<usuario>:<contraseña>@cluster.mongodb.net/tienda
+# Conectar MongoDB de forma remota:
 
+PORT=5000
+MONGO_URI=mongodb+srv://<usuario>:<contraseña>@base01.kldoepc.mongodb.net/tienda_virtual
+                         User123 :  Admin123
+
+# Conectar MongoDB de forma local:
+
+MONGO_URI=mongodb://localhost:27017/tienda_virtual
+PORT=5000
 
 En una Terminal Bash Ejecutar los siguientes comandos:
 🔧 Instalar dependencias e iniciar:
