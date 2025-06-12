@@ -8,7 +8,7 @@ Este es un proyecto Full Stack para gestionar una tienda virtual. Incluye:
 ---
 
 ## 📁 Estructura del proyecto
-
+```
 Proyecto_Tienda/
 ├── config/ # Configuración de la base de datos
 ├── models/ # Modelos de MongoDB (Mongoose)
@@ -20,6 +20,7 @@ Proyecto_Tienda/
 │ └── package.json
 ├── .env # Variables de entorno del backend
 └── .gitignore
+```
 
 ## 🚀 Cómo ejecutar
 
