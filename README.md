@@ -35,14 +35,14 @@ cd Proyecto_Tienda
 
 # Conectar MongoDB de forma remota:
 
-PORT=5000
+```PORT=5000
 MONGO_URI=mongodb+srv://<usuario>:<contraseña>@base01.kldoepc.mongodb.net/tienda_virtual
-
+```
 # Conectar MongoDB de forma local:
-
+```
 MONGO_URI=mongodb://localhost:27017/tienda_virtual
 PORT=5000
-
+```
 En una Terminal Bash Ejecutar los siguientes comandos:
 🔧 Instalar dependencias e iniciar:
 ```bash
