@@ -34,8 +34,8 @@ cd Proyecto_Tienda
 📄 Crear el archivo .env en la raíz:
 
 # Conectar MongoDB de forma remota:
-
-```PORT=5000
+```
+PORT=5000
 MONGO_URI=mongodb+srv://<usuario>:<contraseña>@base01.kldoepc.mongodb.net/tienda_virtual
 ```
 # Conectar MongoDB de forma local:
