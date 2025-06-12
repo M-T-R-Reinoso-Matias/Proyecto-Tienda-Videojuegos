@@ -43,8 +43,9 @@ routerC.get('/compradores', async (req, res) => {
     const clientesMap = new Map();
 
     pedidos.forEach(pedido => {
-      if (pedido.cliente && pedido.cliente.codigo_cliente) {
-        clientesMap.set(pedido.cliente.codigo_cliente, pedido.cliente);
+      const cliente = pedido.cliente;
+      if (cliente && cliente.correo) {
+        clientesMap.set(cliente.correo, cliente); // clave: correo único
       }
     });
 
