@@ -1,6 +1,7 @@
 // src/components/Home.js
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import api from '../services/api'; // Asegurate de que la ruta sea correcta
 
 function Home() {
   const [productos, setProductos] = useState([]);
@@ -28,12 +29,10 @@ function Home() {
   useEffect(() => {
     const obtenerDatos = async () => {
       try {
-        const resProductos = await fetch('http://localhost:5000/api/productos');
-        const dataProductos = await resProductos.json();
+        const { data: dataProductos } = await api.get('/productos');
         setProductos(dataProductos);
 
-        const resJuegos = await fetch('http://localhost:5000/api/juegos');
-        const dataJuegos = await resJuegos.json();
+        const { data: dataJuegos } = await api.get('/juegos');
         setJuegos(dataJuegos);
       } catch (error) {
         console.error('Error al obtener datos:', error);
@@ -68,47 +67,26 @@ function Home() {
       return;
     }
 
-    const token = localStorage.getItem('token');
-    if (!token) {
-      alert('🔒 Token no encontrado. Por favor inicia sesión de nuevo.');
-      navigate('/login');
-      return;
-    }
-
     try {
-      const res = await fetch('http://localhost:5000/api/carrito/agregar', {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          productoId: producto._id,
-          tipo: tipo
-        }),
+      await api.post('/carrito/agregar', {
+        productoId: producto._id,
+        tipo: tipo
       });
-
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.mensaje || 'Error al agregar al carrito');
-      }
 
       alert(`✅ "${producto.nombre}" agregado al carrito.`);
 
       // Actualizar stock
       if (tipo === 'Producto') {
-        const resProductos = await fetch('http://localhost:5000/api/productos');
-        const dataProductos = await resProductos.json();
+        const { data: dataProductos } = await api.get('/productos');
         setProductos(dataProductos);
       } else {
-        const resJuegos = await fetch('http://localhost:5000/api/juegos');
-        const dataJuegos = await resJuegos.json();
+        const { data: dataJuegos } = await api.get('/juegos');
         setJuegos(dataJuegos);
       }
 
     } catch (error) {
       console.error('Error al agregar al carrito:', error);
-      alert(`❌ ${error.message}`);
+      alert(`❌ ${error.response?.data?.mensaje || error.message}`);
     }
   };
 
@@ -122,7 +100,6 @@ function Home() {
           <button onClick={() => navigate('/perfil')}>Mi Perfil</button>
           <button onClick={cerrarSesion}>Cerrar sesión</button>
 
-          {/* 🔒 Botón solo visible para administradores */}
           {usuario.rol === 'admin' && (
             <button
               onClick={() => navigate('/admin')}
@@ -141,11 +118,9 @@ function Home() {
 
       <hr />
 
-      {/* Solo los clientes o visitantes pueden ver estos botones */}
       {(!usuario || usuario.rol === 'cliente') && (
-        <div style={{ marginBottom: '1rem',  }}>
+        <div style={{ marginBottom: '1rem' }}>
           <Link to="/carrito"><button>🛒 Ver carrito</button></Link>
-          {/*<Link to="/juegos" style={{ marginLeft: '1rem' }}><button>🎮 Ver juegos</button></Link>*/}
         </div>
       )}
 
@@ -214,8 +189,3 @@ function Home() {
 }
 
 export default Home;
-
-
-
-
-
