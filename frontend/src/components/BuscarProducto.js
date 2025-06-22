@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import axios from 'axios';
+import api from '../api'; // Asegurate de que la ruta sea correcta
 const clickSound = new Audio('/super-mario-bros-tuberia.mp3');
 
 const handleClick = () => {
@@ -13,7 +13,7 @@ const BuscarProducto = () => {
   const buscarProductos = async () => {
     if (!query.trim()) return;
     try {
-      const res = await axios.get(`http://localhost:5000/api/productos/buscar?query=${query}`);
+      const res = await api.get(`/productos/buscar?query=${query}`);
       setResultados(res.data);
     } catch (error) {
       console.error('Error al buscar productos:', error);
@@ -31,16 +31,15 @@ const BuscarProducto = () => {
           onChange={(e) => setQuery(e.target.value)}
           className="flex-1 border px-3 py-2 rounded-l"
         />
-          <button
-  onClick={() => {
-    handleClick();  // reproducir sonido al hacer clic
-    buscarProductos(); // sigue funcionando la búsqueda
-  }}
-  className="bg-blue-600 text-white px-4 py-2 rounded-r hover:bg-blue-700"
->
-  Buscar
-</button>
-
+        <button
+          onClick={() => {
+            handleClick();
+            buscarProductos();
+          }}
+          className="bg-blue-600 text-white px-4 py-2 rounded-r hover:bg-blue-700"
+        >
+          Buscar
+        </button>
       </div>
       <ul>
         {resultados.map((prod) => (
