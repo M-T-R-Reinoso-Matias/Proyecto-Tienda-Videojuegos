@@ -149,7 +149,6 @@ router.post('/eliminar', verificarToken, async (req, res) => {
 });
 
 // ✅ POST: Finalizar compra y generar un pedido
-// ✅ POST: Finalizar compra y generar un pedido
 router.post('/finalizar', verificarToken, async (req, res) => {
   try {
     const carrito = await Carrito.findOne({ usuario: req.user._id })
@@ -163,6 +162,20 @@ router.post('/finalizar', verificarToken, async (req, res) => {
     const cliente = await Cliente.findOne({ usuario: req.user._id });
     if (!cliente) {
       return res.status(404).json({ mensaje: 'Información del cliente no encontrada' });
+    }
+
+    // ✅ Validación agregada aquí
+    const camposFaltantes = [];
+    if (!cliente.nombre)    camposFaltantes.push('nombre');
+    if (!cliente.correo)    camposFaltantes.push('correo');
+    if (!cliente.telefono)  camposFaltantes.push('telefono');
+    if (!cliente.direccion) camposFaltantes.push('direccion');
+
+    if (camposFaltantes.length > 0) {
+      return res.status(400).json({
+        error: 'Perfil incompleto. Complete los siguientes campos:',
+        camposFaltantes
+      });
     }
 
     const productos = [];
