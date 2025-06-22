@@ -1,7 +1,7 @@
 // src/components/Home.js
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import api from '../api'; // Asegurate de que la ruta sea correcta
+import api from '../services/api'; // Asegurate de que la ruta sea correcta
 
 function Home() {
   const [productos, setProductos] = useState([]);

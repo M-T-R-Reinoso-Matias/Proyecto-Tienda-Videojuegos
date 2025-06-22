@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import api from '../api'; // Asegurate de que la ruta sea correcta
+import api from '../services/api'; // Asegurate de que la ruta sea correcta
 const clickSound = new Audio('/super-mario-bros-tuberia.mp3');
 
 const handleClick = () => {
