@@ -28,10 +28,10 @@ routerC.post('/', async (req, res) => {
 // GET - Obtener todos los clientes
 routerC.get('/', async (req, res) => {
   try {
-    const clientes = await Cliente.find();
+    const clientes = await Cliente.find().sort({ id_cliente: 1 });
     res.json(clientes);
-  } catch (e) {
-    res.status(500).json({ error: e.message });
+  } catch (error) {
+    res.status(500).json({ mensaje: 'Error al obtener clientes', error });
   }
 });
 

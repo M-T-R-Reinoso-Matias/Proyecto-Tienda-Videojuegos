@@ -61,10 +61,10 @@ router.post('/', validarProductoCreacion, async (req, res) => {
 // Obtener todos los productos
 router.get('/', async (req, res) => {
   try {
-    const productos = await Producto.find();
+    const productos = await Producto.find().sort({ id_producto: 1 }); // orden ascendente
     res.json(productos);
-  } catch (e) {
-    res.status(500).json({ error: e.message });
+  } catch (error) {
+    res.status(500).json({ mensaje: 'Error al obtener productos', error });
   }
 });
 

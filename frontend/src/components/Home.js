@@ -76,7 +76,7 @@ function Home() {
       alert(`✅ "${producto.nombre}" agregado al carrito.`);
 
       // Actualizar stock
-      if (tipo === 'Producto') {
+      if (tipo === 'producto') {
         const { data: dataProductos } = await api.get('/productos');
         setProductos(dataProductos);
       } else {
@@ -137,7 +137,7 @@ function Home() {
               <p><strong>${prod.precio}</strong></p>
               <p>Stock: {prod.stock}</p>
               {usuario && usuario.rol === 'cliente' ? (
-                <button onClick={() => agregarAlCarrito(prod, 'Producto')} disabled={prod.stock === 0}>
+                <button onClick={() => agregarAlCarrito(prod, 'producto')} disabled={prod.stock === 0}>
                   {prod.stock === 0 ? 'Sin stock' : '🛒 Agregar al carrito'}
                 </button>
               ) : usuario ? (
@@ -168,7 +168,7 @@ function Home() {
               <p><strong>${juego.precio}</strong></p>
               <p>Stock: {juego.stock}</p>
               {usuario && usuario.rol === 'cliente' ? (
-                <button onClick={() => agregarAlCarrito(juego, 'Juego')} disabled={juego.stock === 0}>
+                <button onClick={() => agregarAlCarrito(juego, 'juego')} disabled={juego.stock === 0}>
                   {juego.stock === 0 ? 'Sin stock' : '🛒 Agregar al carrito'}
                 </button>
               ) : usuario ? (

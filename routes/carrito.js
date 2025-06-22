@@ -64,7 +64,9 @@ router.post('/agregar', verificarToken, async (req, res) => {
 
   try {
     const item = await Modelo.findById(productoId);
-    if (!item) {
+
+    if (!item || !item._id) {
+      console.error(`❌ ${tipo} con ID ${productoId} no encontrado.`);
       return res.status(404).json({ mensaje: `${tipo} no encontrado` });
     }
 
@@ -101,11 +103,13 @@ router.post('/agregar', verificarToken, async (req, res) => {
 
     await carrito.save();
 
-    res.json({ mensaje: `${tipo} agregado al carrito` });
+    res.json({ mensaje: `${tipoNormalizado} agregado al carrito` });
   } catch (err) {
+    console.error('❌ Error interno en /carrito/agregar:', err);
     res.status(500).json({ mensaje: 'Error al agregar al carrito', error: err.message });
   }
 });
+
 
 // ✅ POST: Eliminar producto o juego específico del carrito y restaurar stock
 router.post('/eliminar', verificarToken, async (req, res) => {

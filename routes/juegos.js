@@ -13,11 +13,11 @@ router.get('/', async (req, res) => {
   if (plataforma) filtro.plataforma = plataforma;
   if (categoria) filtro.categoria = categoria;
 
-  try {
-    const juegos = await Juego.find(filtro);
+   try {
+    const juegos = await Juego.find().sort({ id_juego: 1 });
     res.json(juegos);
   } catch (error) {
-    res.status(500).json({ error: 'Error al obtener juegos' });
+    res.status(500).json({ mensaje: 'Error al obtener juegos', error });
   }
 });
 
