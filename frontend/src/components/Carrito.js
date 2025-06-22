@@ -122,7 +122,10 @@ const Carrito = () => {
 
       {camposFaltantes.length > 0 && (
         <div style={{ color: 'red', marginBottom: '1rem' }}>
-          Para completar tu pedido, actualiza tu perfil agregando: <strong>{camposFaltantes.join(', ')}</strong>.
+          <p>
+         ⚠️ Para completar tu pedido, actualiza tu perfil agregando: <strong>{camposFaltantes.join(', ')}.</strong>
+         </p>
+         <button onClick={() => navigate('/perfil')} style={{ marginTop: '0.5rem' }}> 📝 Ir a completar perfil </button>
         </div>
       )}
 
