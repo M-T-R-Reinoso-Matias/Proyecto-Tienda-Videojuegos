@@ -74,3 +74,11 @@ npm start
 * Mongoose
 
 * Axios
+
+### 🚀 Hosting utilizados 
+
+* Para Hostear el Backend se utilizo 🌐 Render
+
+* Para Hostear el Frontend se utilizo 🌐 Vercel
+
+* Para Hostear la base de datos se utilizo 🌐 MongoDB Atlas
