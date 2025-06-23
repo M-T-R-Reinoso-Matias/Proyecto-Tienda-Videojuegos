@@ -10,17 +10,16 @@ function Login() {
 
   const handleLogin = async (e) => {
     e.preventDefault();
+
     try {
       const res = await api.post('/auth/login', { email, password });
 
-      // Guarda el token y el objeto completo del usuario
       localStorage.setItem('token', res.data.token);
       localStorage.setItem('usuario', JSON.stringify(res.data.usuario));
       localStorage.setItem('rol', res.data.usuario.rol);
 
       alert('✅ Inicio de sesión exitoso');
 
-      // Redirección según el rol del usuario
       const rol = res.data.usuario.rol;
       if (rol === 'admin') {
         navigate('/admin');
@@ -28,7 +27,12 @@ function Login() {
         navigate('/');
       }
     } catch (err) {
-      alert('❌ Error al iniciar sesión: ' + (err.response?.data?.error || 'Error desconocido'));
+      const msg = err.response?.data?.error;
+      if (msg) {
+        alert('❌ ' + msg);
+      } else {
+        alert('❌ Error desconocido al iniciar sesión');
+      }
     }
   };
 
@@ -51,12 +55,16 @@ function Login() {
           required
         /><br />
         <button type="submit">Iniciar Sesión</button>
-        <button style={{ marginTop: '1rem' }} onClick={() => navigate('/')}>⬅️ Volver a Inicio </button>
+        <button
+          type="button"
+          style={{ marginTop: '1rem' }}
+          onClick={() => navigate('/')}
+        >
+          ⬅️ Volver a Inicio
+        </button>
       </form>
     </div>
   );
 }
 
 export default Login;
-
-

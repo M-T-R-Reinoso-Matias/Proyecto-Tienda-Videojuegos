@@ -4,7 +4,7 @@ import api from '../services/api';
 
 function Registro() {
   const navigate = useNavigate();
-  const [form, setForm] = useState({ nombre: '', correo: '', contraseña: '' });
+  const [form, setForm] = useState({ nombre: '', correo: '', password: '' });
   const [error, setError] = useState('');
 
   const handleChange = (e) => {
@@ -47,9 +47,9 @@ function Registro() {
         />
         <input
           type="password"
-          name="contraseña"
+          name="password"
           placeholder="Contraseña"
-          value={form.contraseña}
+          value={form.password}
           onChange={handleChange}
           required
           className="w-full border p-2 rounded"

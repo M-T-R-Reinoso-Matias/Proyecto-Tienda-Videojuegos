@@ -1,6 +1,6 @@
 // src/components/Clientes.js
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+//import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 
 export default function Clientes({ usuario }) {
@@ -16,7 +16,7 @@ export default function Clientes({ usuario }) {
   });
   const [error, setError] = useState('');
 
-  const navigate = useNavigate();
+  //const navigate = useNavigate();
   const esAdmin = usuario?.rol === 'admin';
 
   const fetchClientes = async () => {
@@ -30,7 +30,7 @@ export default function Clientes({ usuario }) {
 
   const fetchUsuarios = async () => {
     try {
-      const res = await api.get('/usuarios');
+      const res = await api.get('/usuarios/todos');
       setUsuarios(res.data);
     } catch (e) {
       console.error('Error al cargar usuarios:', e.message);
@@ -58,30 +58,49 @@ export default function Clientes({ usuario }) {
   }, [esAdmin]);
 
   const agregar = async () => {
-    try {
-      setError('');
-      await api.post('/clientes', nuevo);
-      setNuevo({
-        id_cliente: '',
-        nombre: '',
-        correo: '',
-        telefono: '',
-        direccion: ''
-      });
-      fetchClientes();
-    } catch (e) {
-      if (e.response?.status === 400) {
-        setError(e.response.data.error);
-      } else {
-        setError('Error del servidor al agregar cliente');
-      }
+  setError('');
+
+  const correoIngresado = nuevo.correo.toLowerCase();
+
+  const correoYaEsCliente = clientes.some(c => c.correo.toLowerCase() === correoIngresado);
+  const correoYaEsUsuario = usuarios.some(u => u.email.toLowerCase() === correoIngresado);
+
+  if (correoYaEsCliente) {
+    setError('⚠️ Ya existe un cliente con ese correo.');
+    return;
+  }
+
+  if (correoYaEsUsuario) {
+    setError('⚠️ Ese correo ya está registrado como usuario. No se puede crear un cliente duplicado.');
+    return;
+  }
+
+  try {
+    await api.post('/clientes', nuevo);
+    setNuevo({
+      id_cliente: '',
+      nombre: '',
+      correo: '',
+      telefono: '',
+      direccion: ''
+    });
+    fetchClientes();
+  } catch (e) {
+    if (e.response?.status === 400) {
+      setError(e.response.data.error);
+    } else {
+      setError('Error del servidor al agregar cliente');
     }
-  };
+  }
+};
+
 
   const eliminar = async (id) => {
+    if (!window.confirm('¿Estás seguro de que deseas eliminar este cliente?')) return;
     try {
       await api.delete(`/clientes/${id}`);
-      fetchClientes();
+      const res = await api.get('/clientes');
+      setClientes(res.data);
     } catch (e) {
       console.error('Error al eliminar cliente:', e.message);
     }
@@ -185,10 +204,6 @@ export default function Clientes({ usuario }) {
 
         <button type="submit">Agregar</button>
       </form>
-
-      <button style={{ marginTop: '1rem' }} onClick={() => navigate('/')}>
-        ⬅️ Volver
-      </button>
     </div>
   );
 }

@@ -15,7 +15,7 @@ export default function Perfil() {
   useEffect(() => {
     async function cargarPerfil() {
       try {
-        const res = await api.get('/usuarios/me');
+        const res = await api.get('/usuarios');
         setForm(res.data);
       } catch (err) {
         console.error('Error al cargar perfil:', err);
@@ -31,7 +31,7 @@ export default function Perfil() {
   const handleSubmit = async e => {
     e.preventDefault();
     try {
-      await api.put('/usuarios/me', form);
+      await api.put('/usuarios', form);
       setMensaje('Perfil actualizado correctamente');
     } catch (err) {
       console.error('Error al actualizar perfil:', err);
@@ -63,7 +63,8 @@ export default function Perfil() {
           <input name="direccion" value={form.direccion} onChange={handleChange} required />
         </div>
         <button type="submit" style={{ marginTop: '1rem' }}>Guardar cambios</button>
-        <button style={{ marginTop: '1rem' }} onClick={() => navigate('/')}>⬅️ Volver </button>
+        <button style={{ marginTop: '1rem' }} onClick={() => navigate('/', { replace: true })}> ⬅️ Volver </button>
+
       </form>
     </div>
   );

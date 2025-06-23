@@ -1,7 +1,7 @@
 // src/components/Home.js
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import api from '../services/api'; // Asegurate de que la ruta sea correcta
+import api from '../services/api';
 
 function Home() {
   const [productos, setProductos] = useState([]);
@@ -10,21 +10,22 @@ function Home() {
   const [usuario, setUsuario] = useState(null);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    try {
-      const data = localStorage.getItem('usuario');
-      const parsed = JSON.parse(data);
-      if (parsed && typeof parsed === 'object' && parsed.nombre) {
-        setUsuario(parsed);
-      } else {
-        console.warn('Usuario No Logeado');
-        localStorage.removeItem('usuario');
-      }
-    } catch (e) {
-      console.warn('Usuario inválido en localStorage');
+ useEffect(() => {
+  if (usuario) return; // ✅ Ya cargado, evitar reintento innecesario
+
+  try {
+    const data = localStorage.getItem('usuario');
+    const parsed = JSON.parse(data);
+    if (parsed && parsed.nombre) {
+      setUsuario(parsed);
+    } else {
       localStorage.removeItem('usuario');
     }
-  }, []);
+  } catch (e) {
+    localStorage.removeItem('usuario');
+  }
+}, [usuario]); // 👈 se ejecuta si cambia usuario
+
 
   useEffect(() => {
     const obtenerDatos = async () => {
@@ -44,11 +45,17 @@ function Home() {
   }, []);
 
   const cerrarSesion = () => {
-    localStorage.removeItem('usuario');
-    localStorage.removeItem('token');
-    setUsuario(null);
-    navigate('/');
-  };
+  const confirm = window.confirm('¿Estás seguro que deseas cerrar sesión?');
+
+  if (!confirm) return;
+
+  localStorage.removeItem('usuario');
+  localStorage.removeItem('token');
+  localStorage.removeItem('inicio');
+  setUsuario(null);
+  navigate('/');
+};
+
 
   const agregarAlCarrito = async (producto, tipo) => {
     if (!usuario) {
@@ -75,7 +82,6 @@ function Home() {
 
       alert(`✅ "${producto.nombre}" agregado al carrito.`);
 
-      // Actualizar stock
       if (tipo === 'producto') {
         const { data: dataProductos } = await api.get('/productos');
         setProductos(dataProductos);
@@ -96,18 +102,33 @@ function Home() {
 
       {usuario ? (
         <div>
-          <p>Hola, {usuario.nombre} 👋</p>
+          <p>Hola, {usuario.nombre} 👋</p> 
+          
+          {(!usuario || usuario.rol === 'cliente') && (<div style={{ marginBottom: '1rem', textAlign: 'right'}}> 
+            <Link to="/carrito"><button>🛒 Ver carrito</button></Link> </div>)}
+
+         <div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem' }}>
           <button onClick={() => navigate('/perfil')}>Mi Perfil</button>
           <button onClick={cerrarSesion}>Cerrar sesión</button>
+            {/* ✅ Botón para ver pedidos del cliente */}
+            {usuario?.rol === 'cliente' && (
+              <div style={{ marginLeft: 'auto' }}>
+                <Link to="/pedidos">
+                  <button>📦 Ver mis pedidos</button>
+                </Link>
+              </div>
+            )}
 
-          {usuario.rol === 'admin' && (
+
+            {usuario.rol === 'admin' && (
             <button
               onClick={() => navigate('/admin')}
-              style={{ marginLeft: '1rem' }}
+              style={{ marginLeft: 'left' }}
             >
               ⚙️ Panel de Administrador
             </button>
           )}
+          </div>
         </div>
       ) : (
         <div>
@@ -117,12 +138,6 @@ function Home() {
       )}
 
       <hr />
-
-      {(!usuario || usuario.rol === 'cliente') && (
-        <div style={{ marginBottom: '1rem' }}>
-          <Link to="/carrito"><button>🛒 Ver carrito</button></Link>
-        </div>
-      )}
 
       <h2>Productos disponibles</h2>
 
@@ -189,3 +204,4 @@ function Home() {
 }
 
 export default Home;
+

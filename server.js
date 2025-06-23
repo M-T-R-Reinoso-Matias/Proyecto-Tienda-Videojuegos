@@ -27,5 +27,6 @@ app.use('/api/protegidas', protegidas);
 app.use('/api/carrito',       carrito);
 app.use('/api/usuarios',     usuarios);
 
+
 const PORT = process.env.PORT || 10000;
 app.listen(PORT, () => console.log(`🚀 Servidor corriendo en puerto ${PORT}`));

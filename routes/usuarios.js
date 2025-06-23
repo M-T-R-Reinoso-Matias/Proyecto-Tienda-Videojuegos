@@ -6,10 +6,10 @@ const Cliente = require('../models/cliente');
 const { verificarToken } = require('../middleware/auth');
 
 /**
- * GET /api/users/me
+ * GET /api/usuarios
  * Recupera datos del usuario autenticado y su perfil de cliente.
  */
-router.get('/me', verificarToken, async (req, res) => {
+router.get('/', verificarToken, async (req, res) => {
   try {
     const usuario = await User.findById(req.user._id).select('-password');
     if (!usuario) {
@@ -17,10 +17,11 @@ router.get('/me', verificarToken, async (req, res) => {
     }
     const cliente = await Cliente.findOne({ usuario: req.user._id });
     res.json({
-      nombre:    usuario.nombre,
-      email:     usuario.email,
-      rol:       usuario.rol,
-      telefono:  cliente?.telefono || '',
+      _id: usuario._id,
+      nombre: usuario.nombre,
+      email: usuario.email,
+      rol: usuario.rol,
+      telefono: cliente?.telefono || '',
       direccion: cliente?.direccion || ''
     });
   } catch (err) {
@@ -30,13 +31,12 @@ router.get('/me', verificarToken, async (req, res) => {
 });
 
 /**
- * PUT /api/users/me
+ * PUT /api/usuarios
  * Actualiza nombre, email, teléfono y dirección del usuario autenticado.
  */
-router.put('/me', verificarToken, async (req, res) => {
+router.put('/', verificarToken, async (req, res) => {
   try {
     const { nombre, email, telefono, direccion } = req.body;
-    // Actualizar User
     const usuario = await User.findById(req.user._id);
     if (!usuario) {
       return res.status(404).json({ error: 'Usuario no encontrado' });
@@ -45,16 +45,23 @@ router.put('/me', verificarToken, async (req, res) => {
     if (email) usuario.email = email;
     await usuario.save();
 
-    // Actualizar o crear Cliente
     let cliente = await Cliente.findOne({ usuario: req.user._id });
     if (!cliente) {
       cliente = new Cliente({ usuario: req.user._id });
     }
-    if (telefono !== undefined)  cliente.telefono  = telefono;
+    if (telefono !== undefined) cliente.telefono = telefono;
     if (direccion !== undefined) cliente.direccion = direccion;
     await cliente.save();
 
     res.json({ message: 'Perfil actualizado correctamente' });
+    /*console.log('Usuario actualizado:', {
+                    nombre: usuario.nombre,
+                    email: usuario.email,
+                    rol: usuario.rol,
+                    telefono: cliente?.telefono,
+                    direccion: cliente?.direccion
+});*/
+
   } catch (err) {
     console.error('Error al actualizar perfil:', err);
     res.status(500).json({ error: 'Error del servidor al actualizar perfil' });
@@ -62,12 +69,14 @@ router.put('/me', verificarToken, async (req, res) => {
 });
 
 /**
- * GET /api/users
+ * GET /api/usuarios/todos
  * Lista todos los usuarios (solo para admins).
  */
-router.get('/', verificarToken, async (req, res) => {
+router.get('/todos', verificarToken, async (req, res) => {
+  if (req.user.rol !== 'admin') {
+    return res.status(403).json({ error: 'Acceso denegado' });
+  }
   try {
-    // opcional: verificar rol admin antes de listar
     const usuarios = await User.find({}, 'nombre email rol');
     res.json(usuarios);
   } catch (e) {
@@ -75,5 +84,6 @@ router.get('/', verificarToken, async (req, res) => {
     res.status(500).json({ error: 'Error al obtener usuarios' });
   }
 });
+
 
 module.exports = router;

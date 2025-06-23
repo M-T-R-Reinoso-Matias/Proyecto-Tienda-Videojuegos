@@ -36,7 +36,7 @@ const PedidoSchema = new mongoose.Schema({
   productos:    [ProductoSchema],
   juegos:       [JuegoSchema],
   fecha_pedido: { type: Date, default: Date.now },
-  estado:       { type: String, enum: ['pendiente','procesando','enviado','entregado'], default: 'pendiente' },
+  estado:       { type: String, enum: ['pendiente','procesando','enviado','entregado' ,'cancelado'], default: 'pendiente' },
   total:        Number
 }, { versionKey: false });
 
@@ -58,8 +58,4 @@ PedidoSchema.pre('save', async function(next) {
 });
 
 module.exports = mongoose.models.Pedido || mongoose.model('Pedido', PedidoSchema);
-
-
-
-
 
